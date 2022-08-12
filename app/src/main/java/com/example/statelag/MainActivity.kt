@@ -13,10 +13,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.RecyclerView
-import com.example.statelag.CardViewModel.CardState.Content
-import com.example.statelag.CardViewModel.CardState.None
+import com.example.statelag.CardViewModel.CardState.*
 import com.example.statelag.databinding.ActivityMainBinding
+import android.widget.TextView
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,15 +32,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.recyclerView.adapter = mainAdapter
         mainAdapter.itemsList = (1..10).map {
-            CardViewModel.CardModel(
-                text = "[${it.toString().padStart(2, '0')}]",
-                duration = 0
-            )
+            CardViewModel.CardModel((Math.random() * 200).toLong())
         }
+        binding.recyclerView.adapter = mainAdapter
         mainAdapter.notifyDataSetChanged()
-
     }
 
     class MainAdapter : RecyclerView.Adapter<MainViewHolder>() {
@@ -47,14 +48,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.composeview, parent, false)
+            println("onCreateViewHolder: $parent")
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.compose_view, parent, false)
+            //val view = LayoutInflater.from(parent.context).inflate(R.layout.android_view, parent, false)
             return MainViewHolder(view)
         }
 
         override fun getItemCount(): Int = itemsList.count()
 
         override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
+            println("onBindViewHolder: $position")
             holder.bind(itemsList[position])
+        }
+
+        override fun getItemId(position: Int): Long {
+            return position.toLong()
         }
     }
 
@@ -67,15 +75,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun bind(data: CardViewModel.CardModel) {
+
+            /*GlobalScope.launch {
+                videoCardViewModel.init(data)
+                videoCardViewModel.state.collectLatest { videoCardState ->
+                    if(videoCardState is Content) {
+                        val textView = view.findViewById<TextView>(R.id.textView)
+                        textView.text = videoCardState.data.number.toString()
+                    }
+                }
+            }*/
+
             (view as ComposeView).setContent {
                 videoCardViewModel.init(data)
                 val videoCardState by videoCardViewModel.state.collectAsState(None)
                 if (videoCardState is Content) {
                     val content = videoCardState as Content
-                    println("setContent: ${content.data}")
-                    val text = "${content.data.text}  ${content.data.duration}"
+                    println("setContent: ${content.data.number}")
+                    val text = "${content.data.number}"
                     Box(modifier = Modifier.fillMaxSize()) {
-                        Text(text)
+                        Text(text = text, style = TextStyle(fontSize = 24.sp))
                     }
                 }
             }

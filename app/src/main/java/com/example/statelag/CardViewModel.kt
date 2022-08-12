@@ -16,7 +16,7 @@ class CardViewModel : ViewModel() {
 
     fun init(data: CardModel) {
         this.data = data
-        val copy = data.copy(text = data.text, duration = (Math.random() * 200).toLong())
+        val copy = data.copy(number = (Math.random() * 200).toLong())
         viewModelScope.launch {
             reducer.update(copy)
         }
@@ -31,7 +31,7 @@ class CardViewModel : ViewModel() {
         }
     }
 
-    data class CardModel(val text: String, val duration: Long)
+    data class CardModel(val number: Long)
 
     sealed class CardState {
         object None : CardState()

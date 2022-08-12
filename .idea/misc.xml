@@ -4,6 +4,10 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.4519927536231884" />
+        <entry key="app/src/main/res/layout/android_view.xml" value="0.2604166666666667" />
+        <entry key="app/src/main/res/layout/androidview.xml" value="0.4942708333333333" />
+        <entry key="app/src/main/res/layout/compose_view.xml" value="0.2604166666666667" />
+        <entry key="app/src/main/res/layout/composeview.xml" value="0.4953125" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.4519927536231884" />
         <entry key="app/src/main/res/layout/empty_viewholder.xml" value="0.23777173913043478" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.4519927536231884" />
