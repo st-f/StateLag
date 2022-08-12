@@ -16,7 +16,7 @@ class CardViewModel : ViewModel() {
 
     fun init(data: CardModel) {
         this.data = data
-        val copy = data.copy(number = (Math.random() * 200).toLong())
+        val copy = data.copy(number = (Math.random() * 1000).toLong())
         viewModelScope.launch {
             reducer.update(copy)
         }

@@ -4,24 +4,26 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.recyclerview.widget.RecyclerView
+import com.example.statelag.CardViewModel.CardState.Content
+import com.example.statelag.databinding.ActivityMainBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+// Compose imports
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import androidx.recyclerview.widget.RecyclerView
-import com.example.statelag.CardViewModel.CardState.*
-import com.example.statelag.databinding.ActivityMainBinding
-import android.widget.TextView
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import com.example.statelag.CardViewModel.CardState.None
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         mainAdapter.itemsList = (1..10).map {
-            CardViewModel.CardModel((Math.random() * 200).toLong())
+            CardViewModel.CardModel((Math.random() * 1000).toLong())
         }
         binding.recyclerView.adapter = mainAdapter
         mainAdapter.notifyDataSetChanged()
@@ -48,7 +50,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
-            println("onCreateViewHolder: $parent")
             val view = LayoutInflater.from(parent.context).inflate(R.layout.compose_view, parent, false)
             //val view = LayoutInflater.from(parent.context).inflate(R.layout.android_view, parent, false)
             return MainViewHolder(view)
@@ -57,12 +58,7 @@ class MainActivity : AppCompatActivity() {
         override fun getItemCount(): Int = itemsList.count()
 
         override fun onBindViewHolder(holder: MainViewHolder, position: Int) {
-            println("onBindViewHolder: $position")
             holder.bind(itemsList[position])
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
         }
     }
 
@@ -91,7 +87,6 @@ class MainActivity : AppCompatActivity() {
                 val videoCardState by videoCardViewModel.state.collectAsState(None)
                 if (videoCardState is Content) {
                     val content = videoCardState as Content
-                    println("setContent: ${content.data.number}")
                     val text = "${content.data.number}"
                     Box(modifier = Modifier.fillMaxSize()) {
                         Text(text = text, style = TextStyle(fontSize = 24.sp))
