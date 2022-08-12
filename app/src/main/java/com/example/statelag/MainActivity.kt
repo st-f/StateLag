@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         mainAdapter.itemsList = (1..10).map {
-            CardViewModel.CardModel((Math.random() * 1000).toLong())
+            CardViewModel.CardModel(0)
         }
         binding.recyclerView.adapter = mainAdapter
         mainAdapter.notifyDataSetChanged()
