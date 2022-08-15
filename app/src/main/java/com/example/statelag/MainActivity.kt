@@ -6,29 +6,29 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.recyclerview.widget.RecyclerView
-import com.example.statelag.CardViewModel.CardState.Content
-import com.example.statelag.databinding.ActivityMainBinding
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-// Compose imports
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import androidx.recyclerview.widget.RecyclerView
+import com.example.statelag.CardViewModel.CardState.Content
 import com.example.statelag.CardViewModel.CardState.None
+import com.example.statelag.databinding.ActivityMainBinding
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val mainAdapter = MainAdapter()
+    private val useLegacy = false
+    private val mainAdapter = MainAdapter(useLegacy)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         mainAdapter.notifyDataSetChanged()
     }
 
-    class MainAdapter : RecyclerView.Adapter<MainViewHolder>() {
+    class MainAdapter(private val useLegacy: Boolean) : RecyclerView.Adapter<MainViewHolder>() {
 
         lateinit var itemsList: List<CardViewModel.CardModel>
 
@@ -50,9 +50,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.compose_view, parent, false)
-            //val view = LayoutInflater.from(parent.context).inflate(R.layout.android_view, parent, false)
-            return MainViewHolder(view)
+            val layout = if (useLegacy) R.layout.android_view else R.layout.compose_view
+            val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
+            return MainViewHolder(view, useLegacy)
         }
 
         override fun getItemCount(): Int = itemsList.count()
@@ -62,26 +62,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    class MainViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
+    class MainViewHolder(private val view: View, private val useLegacy: Boolean) : RecyclerView.ViewHolder(view) {
 
         private val videoCardViewModel = CardViewModel()
 
         init {
-            setViewCompositionStrategy(view)
+            if (!useLegacy) {
+                setViewCompositionStrategy(view)
+            }
         }
 
         fun bind(data: CardViewModel.CardModel) {
+            if (useLegacy) bindLegacy(data) else bindCompose(data)
+        }
 
-            /*GlobalScope.launch {
+        private fun bindLegacy(data: CardViewModel.CardModel) {
+            GlobalScope.launch {
                 videoCardViewModel.init(data)
                 videoCardViewModel.state.collectLatest { videoCardState ->
-                    if(videoCardState is Content) {
+                    if (videoCardState is Content) {
                         val textView = view.findViewById<TextView>(R.id.textView)
                         textView.text = videoCardState.data.number.toString()
                     }
                 }
-            }*/
+            }
+        }
 
+        private fun bindCompose(data: CardViewModel.CardModel) {
             (view as ComposeView).setContent {
                 videoCardViewModel.init(data)
                 val videoCardState by videoCardViewModel.state.collectAsState(None)
@@ -96,9 +103,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         private fun setViewCompositionStrategy(view: View) {
-            (view as? ComposeView)?.setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-            )
+            (view as? ComposeView)?.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         }
     }
 

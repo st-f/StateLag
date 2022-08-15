@@ -10,15 +10,11 @@ import kotlinx.coroutines.withContext
 class CardViewModel : ViewModel() {
 
     private val reducer = CardReducer()
-    private var data: CardModel? = null
-
     val state = reducer.state
 
     fun init(data: CardModel) {
-        this.data = data
-        val copy = data.copy(number = (Math.random() * 1000).toLong())
         viewModelScope.launch {
-            reducer.update(copy)
+            reducer.update(data)
         }
     }
 
@@ -27,7 +23,11 @@ class CardViewModel : ViewModel() {
         val state = MutableStateFlow<CardState>(CardState.None)
 
         suspend fun update(cardModel: CardModel) = withContext(Dispatchers.IO) {
-            state.value = CardState.Content(cardModel)
+            state.value = map(cardModel)
+        }
+
+        private fun map(cardModel: CardModel): CardState.Content {
+            return CardState.Content(cardModel.copy(number = (Math.random() * 100).toLong()))
         }
     }
 
@@ -36,6 +36,5 @@ class CardViewModel : ViewModel() {
     sealed class CardState {
         object None : CardState()
         data class Content(val data: CardModel) : CardState()
-
     }
 }
